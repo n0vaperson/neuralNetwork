@@ -29,6 +29,13 @@ public class Network {
     
     public static void main(String [] args){
     	Network network = new Network();
+        ArrayList<ArrayList<String>> bigData = readCSV("Fast Food Nutrition (2).csv");
+        ArrayList<double[]> fData = new ArrayList<double[]>();
+
+        //adds # calories to the first slot of the double and saturated fats (g) to the second slot of the double
+        for (int i = 0; i<bigData.size(); i++){
+            	fData.add(new double[]{bigData[i][4],bigData[i][9]});
+        }
     	Double prediction = network.predict(2.2, 30.5);
     	System.out.println("prediction: " + prediction);
     	}
@@ -147,6 +154,7 @@ public class Network {
 
         return data;
     }
+
     //make inputs array of double values
     //make answers array of double answers (1.0, 0.0)
     
