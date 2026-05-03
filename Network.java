@@ -11,7 +11,7 @@ public class Network {
     Neuron first = new Neuron();
     Neuron second = new Neuron();
     Neuron out = new Neuron();
-    
+
     /*
      * Data flows:
      * inputs → hidden layer → output layer
@@ -26,21 +26,40 @@ public class Network {
         return out.predict(firstOut, secondOut);
     }
 
-    
-    public static void main(String [] args){
-    	Network network = new Network();
+    public static void main(String[] args) {
+        Network network = new Network();
         ArrayList<ArrayList<String>> bigData = readCSV("Fast Food Nutrition (2).csv");
-        ArrayList<double[]> fData = new ArrayList<double[]>();
+        ArrayList<double[]> ffData = new ArrayList<double[]>();
+        ArrayList<Double> ffAnswers = new ArrayList<Double>();
+        // calculate this
+        int avgCals = 240;
 
-        //adds # calories to the first slot of the double and saturated fats (g) to the second slot of the double
-        for (int i = 0; i<bigData.size(); i++){
-            	fData.add(new double[]{bigData[i][4],bigData[i][9]});
+        // adds sodium (mg) calories to the first slot of the double and saturated fats
+        // (g) to the second slot of the double
+        for (int i = 0; i < bigData(0).size(); i++) {
+            ffData.add(
+                    new double[] { Double.parseDouble(bigData(i)[10]) / 426, Double.parseDouble(bigData(i)[9]) / 13 });
         }
-    	Double prediction = network.predict(2.2, 30.5);
-    	System.out.println("prediction: " + prediction);
-    	}
 
-    
+        // if it has more than 240 calories
+        for (int i = 0; i < bigData(0).size(); i++) {
+            if (Double.parseDouble(bigData(i)[4]) > avgCals) {
+                ffAnswers.add(1.0);
+            } else
+                ffAnswers.add(0.0);
+        }
+
+        network.train(ffData, ffAnswers);
+        double testSodium = 300;
+        double testFat = 8;
+
+        double pred = network.predict(
+                testSodium / 426.0,
+                testFat / 13.0);
+
+        System.out.println("Prediction: " + pred);
+    }
+
     /**
      * TRAINING FUNCTION
      * 
@@ -60,23 +79,23 @@ public class Network {
             for (int i = 0; i < data.size(); i++) {
 
                 double x1 = data.get(i)[0];
-                double x2 = data.get(i)[1]; 
-                double correctAnswer = answers.get(i);   
+                double x2 = data.get(i)[1];
+                double correctAnswer = answers.get(i);
 
                 // =========================
                 // 1. FORWARD PASS
                 // =========================
 
                 // Hidden neuron 1
-                double z1 = first.rawValue(x1, x2);     
-                double firstOut = first.predict(x1, x2); 
+                double z1 = first.rawValue(x1, x2);
+                double firstOut = first.predict(x1, x2);
 
                 // Hidden neuron 2
-                double z2 =  second.rawValue(x1, x2); 
+                double z2 = second.rawValue(x1, x2);
                 double secondOut = second.predict(x1, x2);
 
                 // Output neuron
-                double z3 =  out.rawValue(firstOut, secondOut); 
+                double z3 = out.rawValue(firstOut, secondOut);
                 double pred = out.predict(firstOut, secondOut);
 
                 // =========================
@@ -101,7 +120,7 @@ public class Network {
                 // Gradients for output neuron weights
                 double grad_out_w1 = predictionLoss * predDerivitive * firstOut;
                 double grad_out_w2 = predictionLoss * predDerivitive * secondOut;
-                double grad_out_b  = predictionLoss * predDerivitive;
+                double grad_out_b = predictionLoss * predDerivitive;
 
                 // ----- Hidden neurons -----
                 // Activation derivatives
@@ -111,12 +130,12 @@ public class Network {
                 // Gradients for hidden neuron 1
                 double grad_h1_w1 = predictionLoss * predDerivitive * out.w1 * dz1 * x1;
                 double grad_h1_w2 = predictionLoss * predDerivitive * out.w1 * dz1 * x2;
-                double grad_h1_b  = predictionLoss * predDerivitive * out.w1 * dz1;
+                double grad_h1_b = predictionLoss * predDerivitive * out.w1 * dz1;
 
                 // Gradients for hidden neuron 2
                 double grad_h2_w1 = predictionLoss * predDerivitive * out.w2 * dz2 * x1;
                 double grad_h2_w2 = predictionLoss * predDerivitive * out.w2 * dz2 * x2;
-                double grad_h2_b  = predictionLoss * predDerivitive * out.w2 * dz2;
+                double grad_h2_b = predictionLoss * predDerivitive * out.w2 * dz2;
 
                 // =========================
                 // 4. UPDATE WEIGHTS
@@ -136,7 +155,7 @@ public class Network {
             }
         }
     }
-    
+
     /**
      * Reads CSV file into a 2D list of strings
      */
@@ -155,11 +174,4 @@ public class Network {
         return data;
     }
 
-    //make inputs array of double values
-    //make answers array of double answers (1.0, 0.0)
-    
-
 }
-
-
-
